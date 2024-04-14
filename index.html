@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tax Calculator</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div
+      class="modal fade"
+      id="resultModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">
+              Your overall income will be
+            </h5>
+          </div>
+          <div class="modal-body" id="resultBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container mt-5" id="formWrapper">
+      <form id="taxForm" class="needs-validation" novalidate>
+        <div class="form-group">
+          <label for="age">Select age group:</label>
+          <select class="form-control" id="age" required>
+            <option value="" disabled selected>Select Age Group</option>
+            <option value="below_40">Below 40</option>
+            <option value="40_to_59">40 to 59</option>
+            <option value="above_60">60 and Above</option>
+          </select>
+          <div
+            class="error-icon"
+            id="ageError"
+            data-toggle="tooltip"
+            title="Please select an age group"
+          >
+            *
+          </div>
+          <div class="invalid-feedback age-error">
+            Please select an age group.
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="income">Enter Gross Annual Income:</label>
+          <input
+            type="number"
+            class="form-control"
+            id="income"
+            required
+            min="0"
+          />
+          <div
+            class="error-icon"
+            id="incomeError"
+            data-toggle="tooltip"
+            title="Please enter a valid income"
+          >
+            *
+          </div>
+          <div class="invalid-feedback income-error">
+            Please enter a valid income.
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="extraIncome">Enter Extra Income:</label>
+          <input
+            type="number"
+            class="form-control"
+            id="extraIncome"
+            required
+            min="0"
+          />
+          <div
+            class="error-icon"
+            id="extraIncomeError"
+            data-toggle="tooltip"
+            title="Please enter a valid extra income"
+          >
+            *
+          </div>
+          <div class="invalid-feedback extraIncome-error">
+            Please enter a valid extra income.
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="deductions">Enter total applicable deductions:</label>
+          <input
+            type="number"
+            class="form-control"
+            id="deductions"
+            required
+            min="0"
+          />
+          <div
+            class="error-icon"
+            id="deductionsError"
+            data-toggle="tooltip"
+            title="Please enter valid deductions"
+          >
+            *
+          </div>
+          <div class="invalid-feedback deductions-error">
+            Please enter valid deductions.
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Calculate Tax</button>
+      </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var taxForm = document.getElementById("taxForm");
+        taxForm.addEventListener("submit", function (event) {
+          event.preventDefault();
+          if (!taxForm.checkValidity()) {
+            event.stopPropagation();
+          }
+          taxForm.classList.add("was-validated");
+
+          var age = document.getElementById("age").value;
+          var income = parseFloat(document.getElementById("income").value);
+          var extraIncome = parseFloat(
+            document.getElementById("extraIncome").value
+          );
+          var deductions = parseFloat(
+            document.getElementById("deductions").value
+          );
+
+          if (!age) {
+            document.getElementById("ageError").style.display = "inline-block";
+            return;
+          } else {
+            document.getElementById("ageError").style.display = "none";
+          }
+
+          if (isNaN(income)) {
+            document.getElementById("incomeError").style.display =
+              "inline-block";
+            return;
+          } else {
+            document.getElementById("incomeError").style.display = "none";
+          }
+
+          if (isNaN(extraIncome)) {
+            document.getElementById("extraIncomeError").style.display =
+              "inline-block";
+            return;
+          } else {
+            document.getElementById("extraIncomeError").style.display = "none";
+          }
+
+          if (isNaN(deductions)) {
+            document.getElementById("deductionsError").style.display =
+              "inline-block";
+            return;
+          } else {
+            document.getElementById("deductionsError").style.display = "none";
+          }
+
+          var totalIncome = income + extraIncome;
+          var taxRate;
+          if (age === "below_40") {
+            taxRate = 0.3;
+          } else if (age === "40_to_59") {
+            taxRate = 0.4;
+          } else {
+            taxRate = 0.1;
+          }
+
+          var taxableIncome = Math.max(totalIncome + deductions - 800000, 0);
+          var taxAmount = taxRate * taxableIncome;
+          var total = Math.max(totalIncome - taxAmount, 0);
+          var resultBody = document.getElementById("resultBody");
+          resultBody.innerHTML = "<p> " + total.toFixed(2) + " Lakhs</p>";
+
+          var resultModal = document.getElementById("resultModal");
+          var bootstrapModal = new bootstrap.Modal(resultModal);
+          bootstrapModal.show();
+        });
+
+        // Show error messages on hover
+        var errorIcons = document.querySelectorAll(".error-icon");
+        errorIcons.forEach(function (icon) {
+          icon.addEventListener("mouseenter", function () {
+            var errorId = this.id.replace("Error", "");
+            var errorMessage = document.querySelector(
+              ".invalid-feedback." + errorId
+            );
+            errorMessage.style.display = "block";
+          });
+          icon.addEventListener("mouseleave", function () {
+            var errorId = this.id.replace("Error", "");
+            var errorMessage = document.querySelector(
+              ".invalid-feedback." + errorId
+            );
+            errorMessage.style.display = "none";
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
